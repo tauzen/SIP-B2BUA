@@ -1,16 +1,15 @@
 package io.cohito.b2bua.sip;
 
-import io.cohito.b2bua.prefixing.ToHeaderWrapper;
+import io.cohito.b2bua.logic.ServiceLogic;
 import io.cohito.b2bua.utils.SipUtilities;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.sip.SipServlet;
 import javax.annotation.Resource;
 import javax.servlet.ServletException;
 import javax.servlet.sip.B2buaHelper;
 import javax.servlet.sip.SipFactory;
+import javax.servlet.sip.SipServlet;
 import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
@@ -51,12 +50,10 @@ public class B2BUAServlet extends SipServlet {
     protected void doInvite(SipServletRequest req) throws ServletException, IOException {
         B2buaHelper b2bua = req.getB2buaHelper();
         if(req.isInitial()) {
-            ToHeaderWrapper toWrapper = new ToHeaderWrapper(req.getTo());
-            //TODO finish to URI creation
-            Map<String, List<String>> headerMap = new HashMap<String, List<String>>();
-            
-            SipServletRequest invite = b2bua.createRequest(req, true, null);
+            Map<String, List<String>> headerMap = ServiceLogic.createSecondLegsInviteHeaders(sipFactory, req);            
+            SipServletRequest invite = b2bua.createRequest(req, true, headerMap);
             SipUtilities.copyContent(req, invite);
+            ServiceLogic.modifySecondLegsInviteRequest(req);
             
             logAction(invite, "sending Invite to second leg");
             invite.send();
@@ -78,11 +75,6 @@ public class B2BUAServlet extends SipServlet {
     @Override
     protected void doSuccessResponse(SipServletResponse resp) throws ServletException, IOException {
         super.doSuccessResponse(resp); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    @Override
-    protected void doErrorResponse(SipServletResponse resp) throws ServletException, IOException {
-        super.doErrorResponse(resp); //To change body of generated methods, choose Tools | Templates.
     }
     
     @Override
