@@ -14,6 +14,7 @@ import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
 import javax.servlet.sip.SipSession;
+import javax.servlet.sip.UAMode;
 import org.apache.log4j.Logger;
 
 
@@ -32,7 +33,11 @@ public class B2BUAServlet extends SipServlet {
                 + "from: " + req.getFrom().getURI() + "|"
                 + "to: " + req.getTo().getURI());
         
-        super.doRequest(req); 
+        try {
+            super.doRequest(req);
+        } catch(Exception ex) {
+            log.error(ex.getLocalizedMessage(), ex);
+        }
     }
 
     @Override
@@ -42,8 +47,11 @@ public class B2BUAServlet extends SipServlet {
                 + resp.getStatus() + " " + resp.getReasonPhrase() + "|"+ resp.getMethod() + "|"
                 + "from: " + resp.getFrom().getURI() + "|"
                 + "to: " + resp.getTo().getURI());
-        
-        super.doResponse(resp);
+        try {
+            super.doResponse(resp);
+        } catch(Exception ex) {
+            log.error(ex.getLocalizedMessage(), ex);
+        }
     }
   
     @Override
@@ -69,27 +77,71 @@ public class B2BUAServlet extends SipServlet {
     
     @Override
     protected void doProvisionalResponse(SipServletResponse resp) throws ServletException, IOException {
-        super.doProvisionalResponse(resp); //To change body of generated methods, choose Tools | Templates.
+        SipServletResponse firstLegResp = SipUtilities.prepareResponseForFirstLeg(resp);
+        SipUtilities.copyContent(resp, firstLegResp);
+        
+        logAction(firstLegResp, "Passing provisional response message");
+        firstLegResp.send();
     }
-    
+
+    @Override
+    protected void doErrorResponse(SipServletResponse resp) throws ServletException, IOException {
+        if(resp.getStatus() == SipServletResponse.SC_REQUEST_TERMINATED) {
+            logAction(resp, "Got 487 for canceled request, finishing");
+            return;
+        }
+        
+        SipServletResponse firstLegResp = SipUtilities.prepareResponseForFirstLeg(resp);        
+        
+        logAction(firstLegResp, "Passing error response message");
+        firstLegResp.send();
+    }
+       
     @Override
     protected void doSuccessResponse(SipServletResponse resp) throws ServletException, IOException {
-        super.doSuccessResponse(resp); //To change body of generated methods, choose Tools | Templates.
+        if(resp.getMethod().equals("BYE")) return;
+        
+        SipServletResponse firstLegResp = SipUtilities.prepareResponseForFirstLeg(resp);
+        SipUtilities.copyContent(resp, firstLegResp);
+        
+        logAction(firstLegResp, "Passing success message.");
+        firstLegResp.send();
     }
     
     @Override
     protected void doAck(SipServletRequest req) throws ServletException, IOException {
-        super.doAck(req); //To change body of generated methods, choose Tools | Templates.
+        B2buaHelper b2bua = req.getB2buaHelper();
+        SipSession linked = b2bua.getLinkedSession(req.getSession());
+        
+        List<SipServletMessage> pendingMsgs = b2bua.getPendingMessages(linked, UAMode.UAC);
+        for(SipServletMessage msg : pendingMsgs) {
+            if(msg instanceof SipServletResponse) {
+                SipServletResponse resp = (SipServletResponse)msg;
+                if(resp.getStatus() == SipServletResponse.SC_OK) {
+                    SipServletRequest ack = resp.createAck();
+                    SipUtilities.copyContent(req, ack);
+                    
+                    logAction(ack, "Call established, sending ack");
+                    ack.send();
+                }
+            }
+        }     
     }
 
     @Override
     protected void doCancel(SipServletRequest req) throws ServletException, IOException {
-        super.doCancel(req); //To change body of generated methods, choose Tools | Templates.
+        B2buaHelper b2bua = req.getB2buaHelper();
+        SipSession linkedSession = b2bua.getLinkedSession(req.getSession());
+        SipServletRequest cancel =  b2bua.createCancel(linkedSession);
+        
+        logAction(cancel, "Canceling request");
+        cancel.send();
+        
     }
     
     @Override
     protected void doBye(SipServletRequest req) throws ServletException, IOException {
-        super.doBye(req); //To change body of generated methods, choose Tools | Templates.
+
     }
 
     @Override
