@@ -6,7 +6,8 @@ import javax.servlet.sip.Address;
 public class ToHeaderWrapper {
     
     //TODO will be moved to properties or external service
-    public static final String INCOMMING_PREFIX = "DE077";
+    public static final String INCOMMING_PREFIX = "DE0779";
+    public static final String OUTGOING_PREFIX = "DE077"; 
     
     private Address addr;
     private String user;
@@ -48,6 +49,6 @@ public class ToHeaderWrapper {
     
     //TODO additional logic should be added
     public String getOutgoingDomain() {
-        return incommingDomain;
+        return OUTGOING_PREFIX + incommingDomain;
     }
 }

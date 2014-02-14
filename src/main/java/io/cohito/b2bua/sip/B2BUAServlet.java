@@ -141,7 +141,13 @@ public class B2BUAServlet extends SipServlet {
     
     @Override
     protected void doBye(SipServletRequest req) throws ServletException, IOException {
-
+        B2buaHelper b2bua = req.getB2buaHelper();
+        SipSession linkedSession = b2bua.getLinkedSession(req.getSession());
+        SipServletRequest bye = b2bua.createRequest(linkedSession, req, null);
+        SipUtilities.copyContent(req, bye);
+        
+        logAction(bye, "Sending bye");
+        bye.send();
     }
 
     @Override
