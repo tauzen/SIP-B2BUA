@@ -61,7 +61,7 @@ public class B2BUAServlet extends SipServlet {
             Map<String, List<String>> headerMap = ServiceLogic.createSecondLegsInviteHeaders(sipFactory, req);            
             SipServletRequest invite = b2bua.createRequest(req, true, headerMap);
             SipUtilities.copyContent(req, invite);
-            ServiceLogic.modifySecondLegsInviteRequest(req);
+            ServiceLogic.modifySecondLegsInviteRequest(invite);
             
             logAction(invite, "sending Invite to second leg");
             invite.send();
@@ -158,6 +158,8 @@ public class B2BUAServlet extends SipServlet {
     protected void logAction(SipServletMessage sipMsg, String logMsg) {
         log.info("appsessId: " + sipMsg.getApplicationSession().getId() + "|"
                 + "callId: " + sipMsg.getCallId() + "|"
+                + "from: " + sipMsg.getFrom().getURI() + "|"
+                + "to: " + sipMsg.getTo().getURI() + "|"
                 + logMsg);
     }
 }

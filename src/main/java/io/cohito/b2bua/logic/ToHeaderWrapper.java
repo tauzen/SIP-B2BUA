@@ -50,7 +50,8 @@ public class ToHeaderWrapper {
     }
     
     //TODO additional logic should be added
+    //temp user=phone param
     public String getOutgoingDomain() {
-        return outgoingDomain;
+        return outgoingDomain + ";user=phone";
     }
 }
