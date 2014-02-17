@@ -4,18 +4,20 @@ import io.cohito.b2bua.utils.SipUtilities;
 import javax.servlet.sip.Address;
 
 public class ToHeaderWrapper {
-    
+      
     //TODO will be moved to properties or external service
-    public static final String INCOMMING_PREFIX = "DE0779";
+    public static final String INCOMMING_PREFIX = "DE07790";
     public static final String OUTGOING_PREFIX = "DE077"; 
     
     private Address addr;
     private String user;
     private String incommingPrefix;
     private String incommingDomain;
+    private String outgoingDomain;
     
-    public ToHeaderWrapper(Address addr) {
+    public ToHeaderWrapper(Address addr, String outgoingDomain) {
         this.addr = addr;
+        this.outgoingDomain = outgoingDomain;
         
         String userPart = SipUtilities.getAddrUserPart(addr);
         
@@ -44,11 +46,11 @@ public class ToHeaderWrapper {
     
     //TODO additional logic should be added
     public String getOutgoingUser() {
-        return user;
+        return OUTGOING_PREFIX + user;
     }
     
     //TODO additional logic should be added
     public String getOutgoingDomain() {
-        return OUTGOING_PREFIX + incommingDomain;
+        return outgoingDomain;
     }
 }
