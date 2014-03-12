@@ -7,10 +7,7 @@ import javax.servlet.sip.SipServletMessage;
 import javax.servlet.sip.SipServletResponse;
 import javax.servlet.sip.SipSession;
 
-/**
- *
- * @author krzysiek
- */
+
 public class SipUtilities {
     
     public static void copyContent(SipServletMessage source, SipServletMessage target) throws IOException {
