@@ -3,11 +3,12 @@ package io.cohito.b2bua.logic;
 import io.cohito.b2bua.utils.SipUtilities;
 import javax.servlet.sip.Address;
 
+
 public class ToHeaderWrapper {
       
     //TODO will be moved to properties or external service
     public static final String INCOMMING_PREFIX = "DE07790";
-    public static final String OUTGOING_PREFIX = "DE077"; 
+    public static final String OUTGOING_PREFIX = "DE0770048"; 
     
     private Address addr;
     private String user;
@@ -49,9 +50,7 @@ public class ToHeaderWrapper {
         return OUTGOING_PREFIX + user;
     }
     
-    //TODO additional logic should be added
-    //temp user=phone param
     public String getOutgoingDomain() {
-        return outgoingDomain + ";user=phone";
+        return outgoingDomain;
     }
 }

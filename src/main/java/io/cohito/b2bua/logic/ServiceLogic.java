@@ -9,6 +9,7 @@ import javax.servlet.sip.SipFactory;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.URI;
 
+
 public class ServiceLogic {
     
     public static  Map<String, List<String>> createSecondLegsInviteHeaders(SipFactory sipFactory, SipServletRequest req) {
@@ -17,6 +18,7 @@ public class ServiceLogic {
         ToHeaderWrapper to = new ToHeaderWrapper(req.getTo(), SipUtilities.getAddrDomainPart(req.getFrom()));
         
         URI toURI = sipFactory.createSipURI(to.getOutgoingUser(), to.getOutgoingDomain());
+        toURI.setParameter("user", "phone");
         toList.add(toURI.toString());
         headerMap.put("To", toList);
         
@@ -24,7 +26,13 @@ public class ServiceLogic {
     }
     
     public static void modifySecondLegsInviteRequest(SipServletRequest req) {
-        req.setRequestURI(req.getTo().getURI());
+        // adding user=phone param to RequestURI, 
+        URI toURI = req.getTo().getURI().clone();
+        toURI.setParameter("user", "phone");
+        req.setRequestURI(toURI);
+        
+        //removing supported header to turn off 100rel
+        req.removeHeader("Supported");
         return;
     }
 }
